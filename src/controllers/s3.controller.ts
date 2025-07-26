@@ -3,6 +3,55 @@ import multer from 'multer';
 import path from 'path';
 import * as s3Service from '../services/s3.service';
 
+/**
+ * Helper function to get file extension from mimetype or existing filename
+ */
+const getFileExtension = (mimetype: string, filename: string): string => {
+    // Check if filename already has an extension
+    const existingExt = path.extname(filename);
+    if (existingExt) {
+        return existingExt.slice(1); // Remove the dot
+    }
+
+    // Map common mimetypes to extensions
+    const mimeToExtMap: {[key: string]: string} = {
+        'image/jpeg': 'jpg',
+        'image/jpg': 'jpg',
+        'image/png': 'png',
+        'image/gif': 'gif',
+        'image/bmp': 'bmp',
+        'image/webp': 'webp',
+        'image/svg+xml': 'svg',
+        'text/plain': 'txt',
+        'text/html': 'html',
+        'text/css': 'css',
+        'text/javascript': 'js',
+        'application/json': 'json',
+        'application/xml': 'xml',
+        'application/pdf': 'pdf',
+        'application/zip': 'zip',
+        'application/x-zip-compressed': 'zip',
+        'application/x-7z-compressed': '7z',
+        'application/x-tar': 'tar',
+        'application/x-rar-compressed': 'rar',
+        'application/msword': 'doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+        'application/vnd.ms-excel': 'xls',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+        'application/vnd.ms-powerpoint': 'ppt',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+        'audio/mpeg': 'mp3',
+        'audio/wav': 'wav',
+        'audio/ogg': 'ogg',
+        'video/mp4': 'mp4',
+        'video/mpeg': 'mpeg',
+        'video/quicktime': 'mov',
+        'video/webm': 'webm'
+    };
+
+    return mimeToExtMap[mimetype] || ''; // Return empty string if no matching extension found
+};
+
 // Configure multer for handling file uploads
 const upload = multer({
     storage: multer.memoryStorage()
@@ -13,13 +62,22 @@ const upload = multer({
  */
 const putObject = async (req: Request, res: Response) => {
     try {
-        const { bucket, key } = req.params;
+        const { bucket } = req.params;
+        let { key } = req.params;
         const file = req.file;
 
         if (!file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
+        // Get appropriate file extension based on mimetype
+        const extension = getFileExtension(file.mimetype, key);
+        
+        // Add file extension if it's not already there
+        if (extension && !key.toLowerCase().endsWith(`.${extension.toLowerCase()}`)) {
+            key = `${key}.${extension}`;
+        }
+        
         // Ensure bucket exists
         s3Service.ensureBucketExists(bucket);
         
