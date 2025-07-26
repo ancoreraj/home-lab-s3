@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "b7a29c9d-4352-4fe1-b8ec-4a039f9c1760",
-		"name": "S3 Clone API",
-		"description": "A collection for testing the S3 Clone API with all the core S3-like operations.",
+		"name": "S3 Clone API (Updated)",
+		"description": "A collection for testing the S3 Clone API with all the core S3-like operations. Updated with the latest API endpoints.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -25,7 +25,7 @@
 			"response": []
 		},
 		{
-			"name": "PUT Object - Upload File",
+			"name": "PUT Object - Upload File (with key)",
 			"request": {
 				"method": "PUT",
 				"header": [],
@@ -55,7 +55,36 @@
 						}
 					]
 				},
-				"description": "Upload a file to a specified bucket with a specific key"
+				"description": "Upload a file to a specified bucket with a custom key (optional)"
+			},
+			"response": []
+		},
+		{
+			"name": "PUT Object - Upload File (without key)",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/path/to/your/file"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/upload/{{bucket}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"upload",
+						"{{bucket}}"
+					]
+				},
+				"description": "Upload a file to a specified bucket using original filename"
 			},
 			"response": []
 		},
@@ -99,6 +128,24 @@
 			"response": []
 		},
 		{
+			"name": "LIST All Buckets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/buckets",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"buckets"
+					]
+				},
+				"description": "List all available buckets in the storage"
+			},
+			"response": []
+		},
+		{
 			"name": "DELETE Object - Delete File",
 			"request": {
 				"method": "DELETE",
@@ -115,24 +162,6 @@
 					]
 				},
 				"description": "Delete a file from a specified bucket with a specific key"
-			},
-			"response": []
-		},
-		{
-			"name": "LIST All Buckets",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/buckets",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"buckets"
-					]
-				},
-				"description": "List all available buckets in the storage"
 			},
 			"response": []
 		}

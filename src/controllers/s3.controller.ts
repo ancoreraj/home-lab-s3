@@ -178,10 +178,27 @@ const deleteObject = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * LIST All Buckets - List all buckets in the storage
+ */
+const listAllBuckets = async (req: Request, res: Response) => {
+    try {
+        const buckets = await s3Service.listAllBuckets();
+        
+        res.status(200).json({
+            buckets
+        });
+    } catch (error) {
+        console.error('Error listing buckets:', error);
+        res.status(500).json({ error: 'Failed to list buckets' });
+    }
+};
+
 export {
     upload,
     putObject,
     getObject,
     listBucket,
+    listAllBuckets,
     deleteObject
 };

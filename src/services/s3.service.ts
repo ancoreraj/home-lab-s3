@@ -62,3 +62,36 @@ export const listBucketContents = (bucketPath: string): Promise<string[]> => {
         });
     });
 };
+
+/**
+ * List all buckets in the uploads directory
+ */
+export const listAllBuckets = (): Promise<string[]> => {
+    return new Promise((resolve, reject) => {
+        fs.readdir(UPLOADS_DIR, (err, files) => {
+            if (err) reject(err);
+            else {
+                // Filter out non-directories
+                Promise.all(files.map(file => {
+                    const filePath = path.join(UPLOADS_DIR, file);
+                    return new Promise<{name: string, isDirectory: boolean}>((res) => {
+                        fs.stat(filePath, (err, stats) => {
+                            if (err || !stats.isDirectory()) {
+                                res({name: file, isDirectory: false});
+                            } else {
+                                res({name: file, isDirectory: true});
+                            }
+                        });
+                    });
+                }))
+                .then(results => {
+                    // Only return directories as buckets
+                    const buckets = results.filter(item => item.isDirectory)
+                                          .map(item => item.name);
+                    resolve(buckets);
+                })
+                .catch(error => reject(error));
+            }
+        });
+    });
+};

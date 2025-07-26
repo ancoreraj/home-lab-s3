@@ -34,6 +34,9 @@ app.get('/download/:bucket/:key', s3Controller.getObject);
 // LIST Bucket - List all files in a bucket
 app.get('/list/:bucket', s3Controller.listBucket);
 
+// LIST All Buckets - List all available buckets
+app.get('/buckets', s3Controller.listAllBuckets);
+
 // DELETE Object - Delete a file from a bucket with a specific key
 app.delete('/delete/:bucket/:key', s3Controller.deleteObject);
 
