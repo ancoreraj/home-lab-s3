@@ -1,72 +1,120 @@
 import { Request, Response } from 'express';
 import multer from 'multer';
+import path from 'path';
 import * as s3Service from '../services/s3.service';
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const { bucket, key } = req.params;
-        if (!bucket) {
-            return cb(new Error('Bucket not specified'), '');
-        }
-        // The 'key' is treated as a path prefix (folder)
-        const destinationPath = s3Service.getFilePath(bucket, key);
-        s3Service.ensureBucketExists(destinationPath);
-        cb(null, destinationPath);
-    },
-    filename: (req, file, cb) => {
-        // Save the file with its original name inside the destination path
-        cb(null, file.originalname);
-    }
+// Configure multer for handling file uploads
+const upload = multer({
+    storage: multer.memoryStorage()
 });
 
-export const upload = multer({ storage: storage });
+/**
+ * PUT Object - Upload a file to a bucket with a specific key
+ */
+const putObject = async (req: Request, res: Response) => {
+    try {
+        const { bucket, key } = req.params;
+        const file = req.file;
 
-export const putObject = (req: Request, res: Response) => {
-    if (!req.file) {
-        return res.status(400).send('No file uploaded.');
+        if (!file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        // Ensure bucket exists
+        s3Service.ensureBucketExists(bucket);
+        
+        // Prepare file path
+        const filePath = s3Service.getFilePath(bucket, key);
+        
+        // Save file to disk
+        await s3Service.saveFile(filePath, file.buffer);
+        
+        res.status(200).json({
+            message: 'File uploaded successfully',
+            bucket,
+            key,
+            size: file.size,
+            mimetype: file.mimetype
+        });
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        res.status(500).json({ error: 'Failed to upload file' });
     }
-    res.status(200).send(`File ${req.params.key} uploaded to bucket ${req.params.bucket}.`);
 };
 
-export const getObject = (req: Request, res: Response) => {
-    const { bucket, key } = req.params;
-    const filePath = s3Service.getFilePath(bucket, key);
+/**
+ * GET Object - Download a file from a bucket with a specific key
+ */
+const getObject = async (req: Request, res: Response) => {
+    try {
+        const { bucket, key } = req.params;
+        const filePath = s3Service.getFilePath(bucket, key);
 
-    if (s3Service.fileExists(filePath)) {
+        if (!s3Service.fileExists(filePath)) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        // Send file directly
         res.sendFile(filePath);
-    } else {
-        res.status(404).send('File not found.');
+    } catch (error) {
+        console.error('Error retrieving file:', error);
+        res.status(500).json({ error: 'Failed to retrieve file' });
     }
 };
 
-export const listBucket = (req: Request, res: Response) => {
-    const { bucket } = req.params;
-    const bucketPath = s3Service.getBucketPath(bucket);
+/**
+ * LIST Bucket - List all files in a bucket
+ */
+const listBucket = async (req: Request, res: Response) => {
+    try {
+        const { bucket } = req.params;
+        const bucketPath = s3Service.getBucketPath(bucket);
 
-    if (s3Service.fileExists(bucketPath)) {
-        s3Service.listBucketContents(bucketPath, (err, files) => {
-            if (err) {
-                return res.status(500).send('Error reading bucket.');
-            }
-            res.json({ files: files });
+        if (!s3Service.fileExists(bucketPath)) {
+            return res.status(404).json({ error: 'Bucket not found' });
+        }
+
+        const files = await s3Service.listBucketContents(bucketPath);
+        
+        res.status(200).json({
+            bucket,
+            files
         });
-    } else {
-        res.status(404).send('Bucket not found.');
+    } catch (error) {
+        console.error('Error listing bucket:', error);
+        res.status(500).json({ error: 'Failed to list bucket contents' });
     }
 };
 
-export const deleteObject = (req: Request, res: Response) => {
-    const { bucket, key } = req.params;
-    const filePath = s3Service.getFilePath(bucket, key);
+/**
+ * DELETE Object - Delete a file from a bucket with a specific key
+ */
+const deleteObject = async (req: Request, res: Response) => {
+    try {
+        const { bucket, key } = req.params;
+        const filePath = s3Service.getFilePath(bucket, key);
 
-    if (s3Service.fileExists(filePath)) {
-        s3Service.deleteFile(filePath, (err) => {
-            if (err) {
-                return res.status(500).send('Error deleting file.');
-            }
-            res.status(200).send(`File ${key} deleted from bucket ${bucket}.`);
+        if (!s3Service.fileExists(filePath)) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        await s3Service.deleteFile(filePath);
+        
+        res.status(200).json({
+            message: 'File deleted successfully',
+            bucket,
+            key
         });
-    } else {
-        res.status(404).send('File not found.');
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        res.status(500).json({ error: 'Failed to delete file' });
     }
+};
+
+export {
+    upload,
+    putObject,
+    getObject,
+    listBucket,
+    deleteObject
 };
