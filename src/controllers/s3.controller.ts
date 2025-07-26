@@ -25,6 +25,7 @@ const getFileExtension = (mimetype: string, filename: string): string => {
         'text/plain': 'txt',
         'text/html': 'html',
         'text/css': 'css',
+        'text/csv': 'csv',
         'text/javascript': 'js',
         'application/json': 'json',
         'application/xml': 'xml',
@@ -58,24 +59,32 @@ const upload = multer({
 });
 
 /**
- * PUT Object - Upload a file to a bucket with a specific key
+ * PUT Object - Upload a file to a bucket with an optional key
  */
 const putObject = async (req: Request, res: Response) => {
     try {
         const { bucket } = req.params;
-        let { key } = req.params;
+        let key = req.query.key as string || '';
         const file = req.file;
 
         if (!file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
-
-        // Get appropriate file extension based on mimetype
-        const extension = getFileExtension(file.mimetype, key);
         
-        // Add file extension if it's not already there
-        if (extension && !key.toLowerCase().endsWith(`.${extension.toLowerCase()}`)) {
-            key = `${key}.${extension}`;
+        // Case 3: If key is not provided, use the original filename
+        if (!key) {
+            key = file.originalname;
+        } 
+        // Case 1 & 2: If key is provided, check extension
+        else {
+            // Get appropriate file extension based on mimetype
+            const extension = getFileExtension(file.mimetype, key);
+            
+            // Case 1: Add file extension if it's not already there (only if extension exists)
+            if (extension && !key.toLowerCase().endsWith(`.${extension.toLowerCase()}`)) {
+                key = `${key}.${extension}`;
+            }
+            // Case 2: If key already has extension, use as is (handled implicitly)
         }
         
         // Ensure bucket exists

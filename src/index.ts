@@ -25,27 +25,27 @@ app.use((req, res, next) => {
 
 // API Routes
 
-// PUT Object - Upload a file to a bucket with a specific key
-app.put('/:bucket/:key', s3Controller.upload.single('file'), s3Controller.putObject);
+// PUT Object - Upload a file to a bucket (key is optional query parameter)
+app.put('/upload/:bucket', s3Controller.upload.single('file'), s3Controller.putObject);
 
 // GET Object - Download a file from a bucket with a specific key
-app.get('/:bucket/:key', s3Controller.getObject);
+app.get('/download/:bucket/:key', s3Controller.getObject);
 
 // LIST Bucket - List all files in a bucket
-app.get('/:bucket', s3Controller.listBucket);
+app.get('/list/:bucket', s3Controller.listBucket);
 
 // DELETE Object - Delete a file from a bucket with a specific key
-app.delete('/:bucket/:key', s3Controller.deleteObject);
+app.delete('/delete/:bucket/:key', s3Controller.deleteObject);
 
 // Root endpoint for API health check
-app.get('/', (req, res) => {
+app.get('/health', (req, res) => {
     res.json({
         message: 'S3 Clone API is running',
         endpoints: [
-            { method: 'PUT', path: '/:bucket/:key', description: 'Upload a file to a bucket' },
-            { method: 'GET', path: '/:bucket/:key', description: 'Download a file from a bucket' },
-            { method: 'GET', path: '/:bucket', description: 'List all files in a bucket' },
-            { method: 'DELETE', path: '/:bucket/:key', description: 'Delete a file from a bucket' }
+            { method: 'PUT', path: '/upload/:bucket/:key', description: 'Upload a file to a bucket' },
+            { method: 'GET', path: '/download/:bucket/:key', description: 'Download a file from a bucket' },
+            { method: 'GET', path: '/list/:bucket', description: 'List all files in a bucket' },
+            { method: 'DELETE', path: '/delete/:bucket/:key', description: 'Delete a file from a bucket' }
         ]
     });
 });
