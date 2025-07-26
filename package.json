@@ -1,0 +1,25 @@
+{
+  "name": "s3-clone",
+  "version": "1.0.0",
+  "description": "A simple S3 clone using Express and TypeScript",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "serve": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/multer": "^1.4.7",
+    "@types/node": "^20.4.8",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  }
+}

@@ -1,0 +1,138 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+		"name": "S3 Clone API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Upload Object",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:3000/:bucket/:key",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						":bucket",
+						":key"
+					],
+					"variable": [
+						{
+							"key": "bucket",
+							"value": "my-bucket"
+						},
+						{
+							"key": "key",
+							"value": "my-file.txt"
+						}
+					]
+				},
+				"description": "Upload a file to a specified bucket. Replace ':bucket' and ':key' with your desired values. Select a file in the 'Body' tab."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Object",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/:bucket/:key",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						":bucket",
+						":key"
+					],
+					"variable": [
+						{
+							"key": "bucket",
+							"value": "my-bucket"
+						},
+						{
+							"key": "key",
+							"value": "my-file.txt"
+						}
+					]
+				},
+				"description": "Retrieve a file from a specified bucket. Replace ':bucket' and ':key' with your desired values."
+			},
+			"response": []
+		},
+		{
+			"name": "List Bucket",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/:bucket",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						":bucket"
+					],
+					"variable": [
+						{
+							"key": "bucket",
+							"value": "my-bucket"
+						}
+					]
+				},
+				"description": "List all objects in a specified bucket. Replace ':bucket' with your desired value."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Object",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/:bucket/:key",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						":bucket",
+						":key"
+					],
+					"variable": [
+						{
+							"key": "bucket",
+							"value": "my-bucket"
+						},
+						{
+							"key": "key",
+							"value": "my-file.txt"
+						}
+					]
+				},
+				"description": "Delete a file from a specified bucket. Replace ':bucket' and ':key' with your desired values."
+			},
+			"response": []
+		}
+	]
+}
