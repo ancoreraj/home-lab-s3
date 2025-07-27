@@ -194,11 +194,90 @@ const listAllBuckets = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * CREATE Bucket - Create a new bucket
+ */
+const createBucket = async (req: Request, res: Response) => {
+    try {
+        const { name } = req.body;
+        
+        if (!name) {
+            return res.status(400).json({ error: 'Bucket name is required' });
+        }
+        
+        // Validate bucket name (alphanumeric, dashes, and underscores only)
+        if (!/^[a-zA-Z0-9-_]+$/.test(name)) {
+            return res.status(400).json({ 
+                error: 'Invalid bucket name. Use only letters, numbers, dashes, and underscores.' 
+            });
+        }
+        
+        const created = s3Service.createBucket(name);
+        
+        if (created) {
+            res.status(201).json({
+                message: `Bucket '${name}' created successfully`,
+                name
+            });
+        } else {
+            res.status(409).json({
+                error: `Bucket '${name}' already exists`,
+                name
+            });
+        }
+    } catch (error) {
+        console.error('Error creating bucket:', error);
+        res.status(500).json({ error: 'Failed to create bucket' });
+    }
+};
+
+/**
+ * DELETE Bucket - Delete a bucket if it's empty
+ */
+const deleteBucket = async (req: Request, res: Response) => {
+    try {
+        const bucket = req.params.bucket;
+        
+        if (!bucket) {
+            return res.status(400).json({ error: 'Bucket name is required' });
+        }
+        
+        const result = await s3Service.deleteBucket(bucket);
+        
+        if (!result.exists) {
+            return res.status(404).json({
+                error: `Bucket '${bucket}' not found`
+            });
+        }
+        
+        if (!result.isEmpty) {
+            return res.status(409).json({
+                error: `Cannot delete bucket '${bucket}': bucket is not empty`
+            });
+        }
+        
+        if (result.deleted) {
+            res.status(200).json({
+                message: `Bucket '${bucket}' deleted successfully`
+            });
+        } else {
+            res.status(500).json({
+                error: `Failed to delete bucket '${bucket}'`
+            });
+        }
+    } catch (error) {
+        console.error('Error deleting bucket:', error);
+        res.status(500).json({ error: 'Failed to delete bucket' });
+    }
+};
+
 export {
     upload,
     putObject,
     getObject,
     listBucket,
     listAllBuckets,
+    createBucket,
+    deleteBucket,
     deleteObject
 };

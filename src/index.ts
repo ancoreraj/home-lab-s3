@@ -12,6 +12,9 @@ const port = parseInt(process.env.PORT || '3000', 10);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files from the public directory
+app.use(express.static('public'));
+
 // CORS middleware to allow cross-origin requests (since you'll access from another machine)
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -36,6 +39,12 @@ app.get('/list/:bucket', s3Controller.listBucket);
 
 // LIST All Buckets - List all available buckets
 app.get('/buckets', s3Controller.listAllBuckets);
+
+// CREATE Bucket - Create a new bucket
+app.post('/buckets', s3Controller.createBucket);
+
+// DELETE Bucket - Delete an empty bucket
+app.delete('/buckets/:bucket', s3Controller.deleteBucket);
 
 // DELETE Object - Delete a file from a bucket with a specific key
 app.delete('/delete/:bucket/:key', s3Controller.deleteObject);

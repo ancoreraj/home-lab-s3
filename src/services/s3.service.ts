@@ -12,10 +12,54 @@ export const getBucketPath = (bucket: string): string => {
     return path.join(UPLOADS_DIR, bucket);
 };
 
+/**
+ * Ensure a bucket exists (create it if it doesn't)
+ */
 export const ensureBucketExists = (bucket: string): void => {
     const bucketPath = getBucketPath(bucket);
     if (!fs.existsSync(bucketPath)) {
         fs.mkdirSync(bucketPath, { recursive: true });
+    }
+};
+
+/**
+ * Create a new bucket
+ * @returns true if bucket was created, false if it already existed
+ */
+export const createBucket = (bucket: string): boolean => {
+    const bucketPath = getBucketPath(bucket);
+    if (fs.existsSync(bucketPath)) {
+        return false; // Bucket already exists
+    }
+    fs.mkdirSync(bucketPath, { recursive: true });
+    return true;
+};
+
+/**
+ * Delete a bucket if it is empty
+ * @returns true if bucket was deleted, false if it doesn't exist or is not empty
+ */
+export const deleteBucket = async (bucket: string): Promise<{ deleted: boolean; isEmpty: boolean; exists: boolean }> => {
+    const bucketPath = getBucketPath(bucket);
+    
+    // Check if bucket exists
+    if (!fs.existsSync(bucketPath)) {
+        return { deleted: false, isEmpty: false, exists: false };
+    }
+    
+    // Check if bucket is empty
+    const files = await fs.promises.readdir(bucketPath);
+    if (files.length > 0) {
+        return { deleted: false, isEmpty: false, exists: true };
+    }
+    
+    // Delete the bucket if it's empty
+    try {
+        fs.rmdirSync(bucketPath);
+        return { deleted: true, isEmpty: true, exists: true };
+    } catch (error) {
+        console.error(`Error deleting bucket ${bucket}:`, error);
+        return { deleted: false, isEmpty: true, exists: true };
     }
 };
 
